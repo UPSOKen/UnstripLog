@@ -53,10 +53,5 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-        <!-- JEFF Media GbR Update Checker -->
-        <repository>
-            <id>jeff-media-public</id>
-            <url>https://hub.jeff-media.com/nexus/repository/jeff-media-public/</url>
-        </repository>
     </repositories>
 </project>

@@ -21,14 +21,10 @@ package com.github.alexqp.unstriplog.main;
 import com.github.alexqp.commons.bstats.bukkit.Metrics;
 import com.github.alexqp.commons.config.ConfigChecker;
 import com.github.alexqp.commons.config.ConsoleErrorType;
-import com.github.alexqp.commons.messages.ConsoleMessage;
 import com.github.alexqp.commons.messages.Debugable;
 import com.google.common.collect.Range;
 
-import com.jeff_media.updatechecker.UpdateCheckSource;
-import com.jeff_media.updatechecker.UpdateChecker;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.github.alexqp.unstriplog.listeners.GrassStripListener;
 import com.github.alexqp.unstriplog.listeners.LogStripListener;
@@ -86,7 +82,6 @@ public class UnstripLog extends JavaPlugin implements Debugable {
         new Metrics(this, 3642);
         this.saveDefaultConfig();
         this.getLogger().info("This plugin was made by alex_qp.");
-        this.updateChecker();
 
         ConfigChecker configChecker = new ConfigChecker(this);
         // be aware that values in (-1, 0) are not possible because value is integer!
@@ -114,22 +109,5 @@ public class UnstripLog extends JavaPlugin implements Debugable {
 
         if (!keepEnabled)
             this.onDisable();
-    }
-
-    private void updateChecker() {
-        int spigotResourceID = 62738;
-        ConfigChecker configChecker = new ConfigChecker(this);
-        ConfigurationSection updateCheckerSection = configChecker.checkConfigSection(this.getConfig(), "updatechecker", ConsoleErrorType.ERROR);
-        if (updateCheckerSection != null && configChecker.checkBoolean(updateCheckerSection, "enable", ConsoleErrorType.WARN, true)) {
-            ConsoleMessage.debug((Debugable) this, "enabled UpdateChecker");
-
-            new UpdateChecker(this, UpdateCheckSource.SPIGOT, String.valueOf(spigotResourceID))
-                    .setDownloadLink(spigotResourceID)
-                    .setChangelogLink("https://www.spigotmc.org/resources/" + spigotResourceID + "/updates")
-                    .setDonationLink("https://paypal.me/alexqpplugins")
-                    .setNotifyOpsOnJoin(configChecker.checkBoolean(updateCheckerSection, "notify_op_on_login", ConsoleErrorType.WARN, true))
-                    .setNotifyByPermissionOnJoin("betterconcrete.updatechecker")
-                    .checkEveryXHours(24).checkNow();
-        }
     }
 }

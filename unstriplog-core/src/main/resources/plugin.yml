@@ -13,13 +13,9 @@ permissions:
     children:
       unstriplog.wood: true
       unstriplog.path: true
-      unstriplog.updatechecker: true
   unstriplog.wood:
     description: Gives the ability to unstrip all log/wood types.
     default: true
   unstriplog.path:
     description: Gives the ability to unstrip path ways.
     default: true
-  unstriplog.updatechecker:
-    description: Get notified on login if a new update of the plugin exists.
-    default: false
