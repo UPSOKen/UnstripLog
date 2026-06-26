@@ -1,3 +1,9 @@
+Fork note
+---------
+This fork adds support for Pale Oak logs and wood on newer Minecraft/Paper servers, including `PALE_OAK_LOG`, `PALE_OAK_WOOD`, `STRIPPED_PALE_OAK_LOG`, and `STRIPPED_PALE_OAK_WOOD`.
+
+It also removes the optional JEFF Media Spigot update checker because the Maven repository used by the original project is no longer resolvable during builds.
+
 UnstripLog
 ===================
 A Free Resource by Alex_qp.
