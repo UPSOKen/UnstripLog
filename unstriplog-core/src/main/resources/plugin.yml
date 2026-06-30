@@ -15,7 +15,7 @@ permissions:
       unstriplog.path: true
   unstriplog.wood:
     description: Gives the ability to unstrip all log/wood types.
-    default: true
+    default: false
   unstriplog.path:
     description: Gives the ability to unstrip path ways.
-    default: true
+    default: false

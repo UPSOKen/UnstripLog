@@ -4,6 +4,8 @@ This fork adds support for Pale Oak logs and wood on newer Minecraft/Paper serve
 
 It also removes the optional JEFF Media Spigot update checker because the Maven repository used by the original project is no longer resolvable during builds.
 
+This fork changes UnstripLog's permission defaults so `unstriplog.wood` and `unstriplog.path` are disabled by default. Grant those permissions explicitly when players should be able to destrip logs or undo grass paths.
+
 UnstripLog
 ===================
 A Free Resource by Alex_qp.
