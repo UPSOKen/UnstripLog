@@ -2,6 +2,12 @@ Fork note
 ---------
 This fork adds support for Pale Oak logs and wood on newer Minecraft/Paper servers, including `PALE_OAK_LOG`, `PALE_OAK_WOOD`, `STRIPPED_PALE_OAK_LOG`, and `STRIPPED_PALE_OAK_WOOD`.
 
+Version 1.11.2 also adds Poplar logs and wood (including their stripped variants), copper axes, and copper shovels. These materials use optional runtime lookups, so servers that do not provide them retain their existing supported materials and tools without requiring the new enum constants.
+
+Deferred undo now checks that the block's full `BlockData` still matches the clicked state before changing it. If its type or state has changed before the next-tick callback, undo is skipped instead of modifying the replacement. A replacement with exactly the same state cannot be distinguished by this check. Existing protection-cancellation handling is unchanged.
+
+These changes require no new configuration. See [the 1.11.2 testing guide](TESTING-1.11.2.md) for regression checks and runtime-testing limits.
+
 It also removes the optional JEFF Media Spigot update checker because the Maven repository used by the original project is no longer resolvable during builds.
 
 This fork changes UnstripLog's permission defaults so `unstriplog.wood` and `unstriplog.path` are disabled by default. Grant those permissions explicitly when players should be able to destrip logs or undo grass paths.

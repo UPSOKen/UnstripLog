@@ -65,6 +65,7 @@ public class InternalsProvider {
         grassToolTypeSet.add(Material.STONE_SHOVEL);
         grassToolTypeSet.add(Material.WOODEN_SHOVEL);
         grassToolTypeSet.add(Material.NETHERITE_SHOVEL);
+        addOptionalMaterial(grassToolTypeSet, "COPPER_SHOVEL");
     }
 
     protected void createLogOriginBlockTypeSet() {
@@ -89,14 +90,16 @@ public class InternalsProvider {
         logOriginBlockTypeSet.add(Material.CHERRY_LOG);
         logOriginBlockTypeSet.add(Material.CHERRY_WOOD);
         logOriginBlockTypeSet.add(Material.BAMBOO_BLOCK);
-        addLogOriginBlockType("PALE_OAK_LOG");
-        addLogOriginBlockType("PALE_OAK_WOOD");
+        addOptionalMaterial(logOriginBlockTypeSet, "PALE_OAK_LOG");
+        addOptionalMaterial(logOriginBlockTypeSet, "PALE_OAK_WOOD");
+        addOptionalMaterial(logOriginBlockTypeSet, "POPLAR_LOG");
+        addOptionalMaterial(logOriginBlockTypeSet, "POPLAR_WOOD");
     }
 
-    private void addLogOriginBlockType(String materialName) {
+    private void addOptionalMaterial(Set<Material> materials, String materialName) {
         Material material = Material.matchMaterial(materialName);
         if (material != null) {
-            logOriginBlockTypeSet.add(material);
+            materials.add(material);
         }
     }
 
@@ -107,6 +110,7 @@ public class InternalsProvider {
         logToolTypeSet.add(Material.STONE_AXE);
         logToolTypeSet.add(Material.WOODEN_AXE);
         logToolTypeSet.add(Material.NETHERITE_AXE);
+        addOptionalMaterial(logToolTypeSet, "COPPER_AXE");
     }
 
     protected void createLogStrippedBlockTypeSet() {

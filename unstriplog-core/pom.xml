@@ -23,7 +23,7 @@
     <parent>
         <artifactId>unstriplog</artifactId>
         <groupId>me.alexqp</groupId>
-        <version>1.11.1</version>
+        <version>1.11.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,7 +31,21 @@
     <version>${project.parent.version}</version>
     <packaging>jar</packaging>
 
+    <properties>
+        <mockito.version>5.15.2</mockito.version>
+    </properties>
+
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+                <configuration>
+                    <argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
         <resources>
             <resource>
                 <targetPath>.</targetPath>
@@ -46,6 +60,18 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>

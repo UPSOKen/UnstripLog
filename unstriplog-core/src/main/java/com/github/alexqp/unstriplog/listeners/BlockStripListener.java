@@ -22,6 +22,7 @@ import com.github.alexqp.commons.messages.ConsoleMessage;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -111,10 +112,15 @@ public abstract class BlockStripListener implements Listener {
     abstract boolean isStrippedBlockType(Material mat);
 
     private void performDelayedUnstripping(Block block, @Nullable Material newBlockType) {
+        BlockData expectedBlockData = block.getBlockData().clone();
         ConsoleMessage.debug(this.getClass(), plugin, "delayed unstripping...");
         new BukkitRunnable() {
             @Override
             public void run() {
+                // The clicked block may have been replaced or changed before this task runs.
+                if (!expectedBlockData.equals(block.getBlockData())) {
+                    return;
+                }
                 performUnstripping(block, newBlockType);
             }
         }.runTask(plugin);
