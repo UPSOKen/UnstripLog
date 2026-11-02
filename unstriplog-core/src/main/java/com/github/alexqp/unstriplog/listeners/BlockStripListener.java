@@ -23,6 +23,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -111,12 +112,17 @@ public abstract class BlockStripListener implements Listener {
     abstract boolean isOriginBlockType(Material mat);
     abstract boolean isStrippedBlockType(Material mat);
 
-    private void performDelayedUnstripping(Block block, @Nullable Material newBlockType) {
+    private void performDelayedUnstripping(PlayerInteractEvent event, Block block, @Nullable Material newBlockType) {
         BlockData expectedBlockData = block.getBlockData().clone();
         ConsoleMessage.debug(this.getClass(), plugin, "delayed unstripping...");
         new BukkitRunnable() {
             @Override
             public void run() {
+                // Protection plugins (claims, WorldGuard, ...) may cancel the interaction after this listener ran.
+                if (event.isCancelled() || event.useInteractedBlock() == Event.Result.DENY) {
+                    ConsoleMessage.debug(BlockStripListener.this.getClass(), plugin, "delayed unstripping skipped: interaction was cancelled");
+                    return;
+                }
                 // The clicked block may have been replaced or changed before this task runs.
                 if (!expectedBlockData.equals(block.getBlockData())) {
                     return;
@@ -165,7 +171,7 @@ public abstract class BlockStripListener implements Listener {
                         return;
                     }
                     this.cancelBlockLocationRemoval(block);
-                    this.performDelayedUnstripping(block, this.getAndDeleteOldBlockType(block));
+                    this.performDelayedUnstripping(e, block, this.getAndDeleteOldBlockType(block));
                     return;
                 }
                 ConsoleMessage.debug(this.getClass(), plugin, "Event cancelled over blockLoc is not available / no infinite mode " + e.getHand());

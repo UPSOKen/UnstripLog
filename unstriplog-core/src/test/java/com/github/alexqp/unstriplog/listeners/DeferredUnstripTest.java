@@ -234,14 +234,24 @@ class DeferredUnstripTest {
     }
 
     @Test
-    void lateCancellationBehaviorIsIntentionallyUnchanged() {
-        // The separate protection-cancellation change is explicitly outside this patch's scope.
+    void lateCancellationByProtectionPluginPreventsUndo() {
         current = data(Material.STRIPPED_OAK_LOG, Axis.Y);
         PlayerInteractEvent event = click(Material.IRON_AXE);
         log(-1, true, false).onInteract(event);
-        event.setCancelled(true);
+        event.setCancelled(true); // e.g. a claim plugin running at a later priority
         runNextTick();
-        assertEquals(Material.OAK_LOG, current.getMaterial());
+        assertEquals(Material.STRIPPED_OAK_LOG, current.getMaterial());
+        verify(block, never()).setType(any(Material.class));
+    }
+
+    @Test
+    void lateBlockInteractionDenialPreventsUndo() {
+        current = data(Material.STRIPPED_OAK_LOG, Axis.Y);
+        PlayerInteractEvent event = click(Material.IRON_AXE);
+        log(-1, true, false).onInteract(event);
+        event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
+        runNextTick();
+        assertEquals(Material.STRIPPED_OAK_LOG, current.getMaterial());
     }
 
     @Test
