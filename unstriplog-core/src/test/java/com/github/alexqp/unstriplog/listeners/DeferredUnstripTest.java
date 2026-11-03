@@ -4,6 +4,7 @@ import com.github.alexqp.commons.messages.ConsoleMessage;
 import com.github.alexqp.unstriplog.main.InternalsProvider;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Orientable;
@@ -11,11 +12,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
@@ -37,6 +40,8 @@ class DeferredUnstripTest {
     private final Player player = mock(Player.class);
     private final PlayerInventory inventory = mock(PlayerInventory.class);
     private final BukkitScheduler scheduler = mock(BukkitScheduler.class);
+    private final PluginManager pluginManager = mock(PluginManager.class);
+    private final BlockState replacedState = mock(BlockState.class);
     private final List<Runnable> nextTick = new ArrayList<>();
     private final Map<Integer, Runnable> expiryTasks = new HashMap<>();
     private final Map<String, MetadataValue> metadata = new HashMap<>();
@@ -50,6 +55,8 @@ class DeferredUnstripTest {
     void setUp() {
         bukkit = mockStatic(Bukkit.class);
         bukkit.when(Bukkit::getScheduler).thenReturn(scheduler);
+        bukkit.when(Bukkit::getPluginManager).thenReturn(pluginManager);
+        when(block.getState()).thenReturn(replacedState);
         debug = mockStatic(ConsoleMessage.class);
         when(player.getInventory()).thenReturn(inventory);
         when(inventory.getItemInMainHand()).thenReturn(new ItemStack(Material.IRON_AXE));
@@ -242,6 +249,41 @@ class DeferredUnstripTest {
         runNextTick();
         assertEquals(Material.STRIPPED_OAK_LOG, current.getMaterial());
         verify(block, never()).setType(any(Material.class));
+    }
+
+    @Test
+    void unstripFiresBlockPlaceEventLikeVanillaStripping() {
+        current = data(Material.STRIPPED_OAK_LOG, Axis.Y);
+        log(-1, true, false).onInteract(click(Material.IRON_AXE));
+        runNextTick();
+        org.mockito.ArgumentCaptor<BlockPlaceEvent> captor = org.mockito.ArgumentCaptor.forClass(BlockPlaceEvent.class);
+        verify(pluginManager).callEvent(captor.capture());
+        assertSame(player, captor.getValue().getPlayer());
+        assertSame(block, captor.getValue().getBlock());
+        assertSame(replacedState, captor.getValue().getBlockReplacedState());
+        assertEquals(Material.OAK_LOG, current.getMaterial());
+        verify(replacedState, never()).update(anyBoolean(), anyBoolean());
+    }
+
+    @Test
+    void logUnstripIsRevertedWhenProtectionPluginDeniesBlockPlace() {
+        // e.g. GriefPrevention cancels BlockPlaceEvent for players without build trust
+        current = data(Material.STRIPPED_OAK_LOG, Axis.Y);
+        doAnswer(call -> { ((BlockPlaceEvent) call.getArgument(0)).setCancelled(true); return null; })
+                .when(pluginManager).callEvent(any(BlockPlaceEvent.class));
+        log(-1, true, false).onInteract(click(Material.IRON_AXE));
+        runNextTick();
+        verify(replacedState).update(true, false);
+    }
+
+    @Test
+    void pathUnstripIsRevertedWhenProtectionPluginDeniesBlockPlace() {
+        current = data(Material.DIRT_PATH, Axis.Y);
+        doAnswer(call -> { ((BlockPlaceEvent) call.getArgument(0)).setBuild(false); return null; })
+                .when(pluginManager).callEvent(any(BlockPlaceEvent.class));
+        grass(-1).onInteract(click(Material.IRON_SHOVEL));
+        runNextTick();
+        verify(replacedState).update(true, false);
     }
 
     @Test

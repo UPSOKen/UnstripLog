@@ -19,10 +19,13 @@
 package com.github.alexqp.unstriplog.listeners;
 
 import com.github.alexqp.commons.messages.ConsoleMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,6 +33,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -114,6 +118,9 @@ public abstract class BlockStripListener implements Listener {
 
     private void performDelayedUnstripping(PlayerInteractEvent event, Block block, @Nullable Material newBlockType) {
         BlockData expectedBlockData = block.getBlockData().clone();
+        Player player = event.getPlayer();
+        ItemStack item = event.getItem() != null ? event.getItem().clone() : new ItemStack(Material.AIR);
+        EquipmentSlot hand = event.getHand() != null ? event.getHand() : EquipmentSlot.HAND;
         ConsoleMessage.debug(this.getClass(), plugin, "delayed unstripping...");
         new BukkitRunnable() {
             @Override
@@ -127,7 +134,17 @@ public abstract class BlockStripListener implements Listener {
                 if (!expectedBlockData.equals(block.getBlockData())) {
                     return;
                 }
+                // Vanilla stripping is checked by claim/protection plugins through BlockPlaceEvent, not through
+                // PlayerInteractEvent. Unstripping changes the block directly, so fire the same event ourselves
+                // and restore the block if anything denies it.
+                BlockState replacedState = block.getState();
                 performUnstripping(block, newBlockType);
+                BlockPlaceEvent placeEvent = new BlockPlaceEvent(block, replacedState, block, item, player, true, hand);
+                Bukkit.getPluginManager().callEvent(placeEvent);
+                if (placeEvent.isCancelled() || !placeEvent.canBuild()) {
+                    replacedState.update(true, false);
+                    ConsoleMessage.debug(BlockStripListener.this.getClass(), plugin, "delayed unstripping reverted: block place was denied");
+                }
             }
         }.runTask(plugin);
     }
